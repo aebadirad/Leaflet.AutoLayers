@@ -295,33 +295,21 @@ L.Control.AutoLayers = L.Control.extend({
 		//fix pesky zooming, have to dynamically measure the hidden div too! Make sure you do that!
 		var overlayBox = this._overlaysList;
 		L.DomEvent.addListener(overlayBox, 'mousewheel', function(e) {
-			var height = overlayBox.clientHeight;
-			var scrollHeight = overlayBox.scrollHeight;
-			var y = e.clientY;
-			if ((this.scrollTop === (scrollHeight - height - 1) && y <= 0) ||
-				(this.scrollTop === 0 && y > 0)) {
-				e.preventDefault();
-			}
+			var delta = e.wheelDelta || -e.detail;
+			this.scrollTop += (delta < 0 ? 1 : -1) * 30;
+			e.preventDefault();
 		});
 		var baseBox = this._baseLayersList;
 		L.DomEvent.addListener(baseBox, 'mousewheel', function(e) {
-			var height = baseBox.clientHeight;
-			var scrollHeight = baseBox.scrollHeight;
-			var y = e.clientY;
-			if ((this.scrollTop === (scrollHeight - height) && y < 0) || (
-					this.scrollTop === 0 && y > 0)) {
-				e.preventDefault();
-			}
+			var delta = e.wheelDelta || -e.detail;
+			this.scrollTop += (delta < 0 ? 1 : -1) * 30;
+			e.preventDefault();
 		});
 		var selectedBox = this._selectedList;
 		L.DomEvent.addListener(selectedBox, 'mousewheel', function(e) {
-			var height = selectedBox.clientHeight;
-			var scrollHeight = selectedBox.scrollHeight;
-			var y = e.clientY;
-			if ((this.scrollTop === (scrollHeight - height - 1) && y < 0) ||
-				(this.scrollTop === 0 && y > 0)) {
-				e.preventDefault();
-			}
+			var delta = e.wheelDelta || -e.detail;
+			this.scrollTop += (delta < 0 ? 1 : -1) * 30;
+			e.preventDefault();
 		});
 
 	},
