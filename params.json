@@ -1,0 +1,6 @@
+{
+  "name": "Leaflet.autolayers",
+  "tagline": "A dynamic leaflet layers control that pulls from multiple mapservers and manages basemaps and overlays plus order",
+  "body": "# Leaflet.AutoLayers\r\nA dynamic leaflet layers control that pulls from multiple mapservers and manages basemaps and overlays plus order\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
