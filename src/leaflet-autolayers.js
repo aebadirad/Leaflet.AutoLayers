@@ -15,7 +15,7 @@ L.Control.AutoLayers = L.Control.extend({
 	selectedBasemap: null,
 
 	countZIndexBase: function(layers) {
-		for (i = 0; i < layers.length; i++) {
+		for (var i = 0; i < layers.length; i++) {
 			var layer = layers[i];
 			if (!layer.baseLayer) {
 				autoControl.zIndexBase++;
@@ -40,8 +40,9 @@ L.Control.AutoLayers = L.Control.extend({
 			}
 		}
 
-		for (i in overlays) {
+		for (var i in overlays) {
 			this._addLayer(overlays[i], i, true);
+			this.overLays[i] = overlays[i];
 		}
 		this.fetchMapData();
 	},
@@ -53,7 +54,7 @@ L.Control.AutoLayers = L.Control.extend({
 		map
 			.on('layeradd', this._onLayerChange, this)
 			.on('layerremove', this._onLayerChange, this);
-
+		this._selectOverlays();
 		return this._container;
 	},
 
@@ -187,7 +188,7 @@ L.Control.AutoLayers = L.Control.extend({
 			var displayLayers = this.parentNode.parentNode.getElementsByClassName(
 				'leaflet-control-layers-overlays')[0].children;
 			if (filterBoxValue.length > 2) {
-				for (i = 0; i < displayLayers.length; i++) {
+				for (var i = 0; i < displayLayers.length; i++) {
 					if (displayLayers[i].innerText.toLowerCase().indexOf(
 							filterBoxValue) > -1) {
 						displayLayers[i].style.display = 'block';
@@ -196,7 +197,7 @@ L.Control.AutoLayers = L.Control.extend({
 					}
 				}
 			} else {
-				for (i = 0; i < displayLayers.length; i++) {
+				for (var i = 0; i < displayLayers.length; i++) {
 					displayLayers[i].style.display = 'block';
 				}
 			}
@@ -208,7 +209,7 @@ L.Control.AutoLayers = L.Control.extend({
 			var displayLayers = this.parentNode.parentNode.getElementsByClassName(
 				'leaflet-control-layers-base')[0].children;
 			if (filterBoxValue.length > 2) {
-				for (i = 0; i < displayLayers.length; i++) {
+				for (var i = 0; i < displayLayers.length; i++) {
 					if (displayLayers[i].innerText.toLowerCase().indexOf(
 							filterBoxValue) > -1) {
 						displayLayers[i].style.display = 'block';
@@ -217,7 +218,7 @@ L.Control.AutoLayers = L.Control.extend({
 					}
 				}
 			} else {
-				for (i = 0; i < displayLayers.length; i++) {
+				for (var i = 0; i < displayLayers.length; i++) {
 					displayLayers[i].style.display = 'block';
 				}
 			}
@@ -225,7 +226,7 @@ L.Control.AutoLayers = L.Control.extend({
 
 		//open and close setup
 		var titles = this._form.getElementsByClassName('leaflet-control-autolayers-title');
-		for (t = 0; t < titles.length; t++) {
+		for (var t = 0; t < titles.length; t++) {
 			L.DomEvent.addListener(titles[t], 'click', function(e) {
 				var overlayOrBase;
 				if (e.currentTarget.innerText === 'Overlays') {
@@ -237,10 +238,10 @@ L.Control.AutoLayers = L.Control.extend({
 
 				var allTabs = this.parentNode.parentNode.getElementsByClassName(
 					'leaflet-control-layers-tab');
-				for (i = 0; i < allTabs.length; i++) {
+				for (var i = 0; i < allTabs.length; i++) {
 					var tab = allTabs[i].getElementsByTagName('div');
 
-					for (m = 0; m < tab.length; m++) {
+					for (var m = 0; m < tab.length; m++) {
 						var tabContent = tab[m];
 
 						if (tabContent.className !== 'leaflet-control-autolayers-title') {
@@ -251,7 +252,7 @@ L.Control.AutoLayers = L.Control.extend({
 				}
 
 				var thisTab = this.parentNode.children;
-				for (i = 0; i < thisTab.length; i++) {
+				for (var i = 0; i < thisTab.length; i++) {
 					thisTab[i].style.display = 'block';
 					var filter = thisTab[i].getElementsByClassName('map-filter-box-' + overlayOrBase);
 					if (filter.length > 0) {
@@ -266,7 +267,7 @@ L.Control.AutoLayers = L.Control.extend({
 					var displayLayers = this.parentNode.getElementsByClassName('leaflet-control-layers-' +
 						overlayOrBase)[0].getElementsByTagName('label');
 					if (filterBoxValue.length > 2) {
-						for (i = 0; i < displayLayers.length; i++) {
+						for (var i = 0; i < displayLayers.length; i++) {
 							if (displayLayers[i].innerText.toLowerCase().indexOf(
 									filterBoxValue) > -1) {
 								displayLayers[i].style.display = 'block';
@@ -276,7 +277,7 @@ L.Control.AutoLayers = L.Control.extend({
 						}
 					}
 				} else {
-					//	for (i = 0; i < displayLayers.length; i++) {
+					//	for (var i = 0; i < displayLayers.length; i++) {
 					//		displayLayers[i].style.display = 'block';
 					//	}
 				}
@@ -330,9 +331,9 @@ L.Control.AutoLayers = L.Control.extend({
 		var mapConfig = this.mapConfig;
 		var self = this;
 		var selected;
-		for (m = 0; m < allMapLayers.length; m++) {
+		for (var m = 0; m < allMapLayers.length; m++) {
 			var mapLayers = allMapLayers[m];
-			for (i = 0; i < mapLayers.length; i++) {
+			for (var i = 0; i < mapLayers.length; i++) {
 				var mapLayer = mapLayers[i];
 				if (!mapLayer.baseLayer) {
 					self.zIndexBase++;
@@ -376,8 +377,6 @@ L.Control.AutoLayers = L.Control.extend({
 			}
 		}
 
-		//add the initial sorting
-		this._setOrderOverlay();
 		//populate what is each in the global properties
 		var baseLayers = this.baseMaps;
 		var overlays = this.overLays;
@@ -386,9 +385,10 @@ L.Control.AutoLayers = L.Control.extend({
 			this._addLayer(baseLayers[i], i);
 		}
 
-		for (i in overlays) {
+		for (var i in overlays) {
 			this._addLayer(overlays[i], i, true);
 		}
+
 	},
 
 	fetchMapData: function() {
@@ -409,6 +409,8 @@ L.Control.AutoLayers = L.Control.extend({
 		var folders = [];
 		var mapServerName = mapServer.name;
 		var mapPass = -1;
+		var blacklist = mapServer.blacklist;
+		var whitelist = mapServer.whitelist;
 		var url = mapServer.dictionary.replace(/&amp;/g, '&');
 		ajax(url, function(res) {
 			if (mapServer.type === 'esri') {
@@ -428,24 +430,27 @@ L.Control.AutoLayers = L.Control.extend({
 						if (mapServer.baseLayers) {
 							mapPass = mapServer.baseLayers.indexOf(layerName);
 						}
-						if (!(mapServer.baseLayers) || mapPass > -1) {
-							layers.push({
-								detailsUrl: url,
-								url: layerUrl,
-								name: layerName,
-								type: 'esri',
-								baseLayer: true,
-								attribution: mapServerName + ' - ' + layerName
-							});
-						} else {
-							layers.push({
-								detailsUrl: url,
-								url: layerUrl,
-								name: layerName,
-								type: 'esri',
-								baseLayer: false,
-								attribution: mapServerName + ' - ' + layerName
-							});
+						if ((whitelist && whitelist.indexOf(layerName) > -1) || (blacklist && blacklist.indexOf(
+								layerName) === -1)) {
+							if (!(mapServer.baseLayers) || mapPass > -1) {
+								layers.push({
+									detailsUrl: url,
+									url: layerUrl,
+									name: layerName,
+									type: 'esri',
+									baseLayer: true,
+									attribution: mapServerName + ' - ' + layerName
+								});
+							} else {
+								layers.push({
+									detailsUrl: url,
+									url: layerUrl,
+									name: layerName,
+									type: 'esri',
+									baseLayer: false,
+									attribution: mapServerName + ' - ' + layerName
+								});
+							}
 						}
 					}
 				}
@@ -471,26 +476,29 @@ L.Control.AutoLayers = L.Control.extend({
 									if (mapServer.baseLayers) {
 										mapPass = mapServer.baseLayers.indexOf(layerName);
 									}
-									if (!(mapServer.baseLayers) || mapPass > -1) {
-										layers.push({
-											detailsUrl: url,
-											url: layerUrl,
-											name: layerName,
-											type: 'esri',
-											baseLayer: true,
-											attribution: mapServerName + ' - ' +
-												layerName
-										});
-									} else {
-										layers.push({
-											detailsUrl: url,
-											url: layerUrl,
-											name: layerName,
-											type: 'esri',
-											baseLayer: false,
-											attribution: mapServerName + ' - ' +
-												layerName
-										});
+									if ((whitelist && whitelist.indexOf(layerName) > -1) || (blacklist && blacklist.indexOf(
+											layerName) === -1)) {
+										if (!(mapServer.baseLayers) || mapPass > -1) {
+											layers.push({
+												detailsUrl: url,
+												url: layerUrl,
+												name: layerName,
+												type: 'esri',
+												baseLayer: true,
+												attribution: mapServerName + ' - ' +
+													layerName
+											});
+										} else {
+											layers.push({
+												detailsUrl: url,
+												url: layerUrl,
+												name: layerName,
+												type: 'esri',
+												baseLayer: false,
+												attribution: mapServerName + ' - ' +
+													layerName
+											});
+										}
 									}
 								}
 							}
@@ -526,12 +534,15 @@ L.Control.AutoLayers = L.Control.extend({
 					if (mapServer.baseLayers) {
 						mapPass = mapServer.baseLayers.indexOf(layer.Name);
 					}
-					if (!(mapServer.baseLayers) || mapPass > -1) {
-						layerObj.baseLayer = true;
-						layers.push(layerObj);
-					} else {
-						layerObj.baseLayer = false;
-						layers.push(layerObj);
+					if ((whitelist && whitelist.indexOf(layer.Name) > -1) || (blacklist && blacklist.indexOf(
+							layer.Name) === -1)) {
+						if (!(mapServer.baseLayers) || mapPass > -1) {
+							layerObj.baseLayer = true;
+							layers.push(layerObj);
+						} else {
+							layerObj.baseLayer = false;
+							layers.push(layerObj);
+						}
 					}
 				}
 			}
@@ -554,60 +565,90 @@ L.Control.AutoLayers = L.Control.extend({
 
 	_addSelectedOverlay: function(name) {
 		if (this.selectedOverlays.indexOf(name) === -1) {
+			this.selectedOverlays.unshift(name);
+			this._buildSelectedOverlays();
+		}
+	},
+
+	_buildSelectedOverlays: function() {
+		var self = this;
+		var selectedOverlays = this.selectedOverlays;
+		var container = this._selectedList;
+		container.innerHTML = '';
+		for (var i = 0; i < selectedOverlays.length; i++) {
+			var name = selectedOverlays[i];
 			var selectedLabel = L.DomUtil.create('label', 'selected-label');
 			var selectedRemove = L.DomUtil.create('span', 'selected-remove', selectedLabel);
 			var selectedName = L.DomUtil.create('span', 'selected-name', selectedLabel);
 			selectedName.innerHTML = name;
-			var selectedUp = L.DomUtil.create('span', 'selected-up', selectedLabel);
-			var selectedDown = L.DomUtil.create('span', 'selected-down', selectedLabel);
-			var container = this._selectedList;
-			container.insertBefore(selectedLabel, container.childNodes[0]);
-			this.selectedOverlays.unshift(name);
+			var selectedUp;
+			var selectedDown;
+			if (selectedOverlays.length === 1) {
+				selectedUp = L.DomUtil.create('span', 'selected-none', selectedLabel);
+				selectedDown = L.DomUtil.create('span', 'selected-none', selectedLabel);
+			} else {
+				if (selectedOverlays.length === (i + 1)) {
+					selectedUp = L.DomUtil.create('span', 'selected-up', selectedLabel);
+					selectedDown = L.DomUtil.create('span', 'selected-none', selectedLabel);
+				} else if (i === 0) {
+					selectedUp = L.DomUtil.create('span', 'selected-none', selectedLabel);
+					selectedDown = L.DomUtil.create('span', 'selected-down', selectedLabel);
+				} else {
+					selectedUp = L.DomUtil.create('span', 'selected-up', selectedLabel);
+					selectedDown = L.DomUtil.create('span', 'selected-down', selectedLabel);
+				}
+			}
+
+			container.appendChild(selectedLabel);
+
+			L.DomEvent.addListener(selectedRemove, 'click', function(e) {
+				var name = this.parentNode.getElementsByClassName('selected-name')[0].innerHTML;
+				var layer = self._getLayerByName(name);
+				self._map.removeLayer(layer.layer);
+			});
+			//Now setup for up and down ordering
+			L.DomEvent.addListener(selectedUp, 'click', function(e) {
+				var name = this.parentNode.getElementsByClassName('selected-name')[0].innerHTML;
+				self._upSelectedOverlay(name);
+			});
+			L.DomEvent.addListener(selectedDown, 'click', function(e) {
+				var name = this.parentNode.getElementsByClassName('selected-name')[0].innerHTML;
+				self._downSelectedOverlay(name);
+			});
+
 		}
+
 	},
 
 	_removeSelectedOverlay: function(name) {
 		if (this.selectedOverlays.indexOf(name) > -1) {
-			var labels = this._selectedList.getElementsByTagName('label');
-			for (i = 0; i < labels.length; i++) {
-				var label = labels[i];
-				var nameSpan = label.getElementsByClassName("selected-name")[0];
-				if (nameSpan.innerHTML === name) {
-					label.parentNode.removeChild(label);
-				}
-			}
+			//var labels = this._selectedList.getElementsByTagName('label');
+			//for (var i = 0; i < labels.length; i++) {
+			//	var label = labels[i];
+			//	var nameSpan = label.getElementsByClassName("selected-name")[0];
+			//	if (nameSpan.innerHTML === name) {
+			//		label.parentNode.removeChild(label);
+			//	}
+			//}
 			this.selectedOverlays.splice(this.selectedOverlays.indexOf(name), 1);
+			this._buildSelectedOverlays();
 		}
 	},
 
 	_upSelectedOverlay: function(name) {
-		var layers = [];
-		var self = this;
 		var overlays = this.selectedOverlays;
 		var selectedIndex = overlays.indexOf(name);
-		var upSelectedIndex = selectedIndex;
-		upSelectedIndex--;
-		if (upSelectedIndex >= 0) {
-			var tempLayer = overlays[upSelectedIndex];
-			overlays[upSelectedIndex] = overlays[selectedIndex];
-			overlays[selectedIndex] = tempLayer;
-			var selectedList = this._selectedList;
-			var selected = selectedList.children;
-			for (i = 0; i < selected.length; i++) {
-				var label = selected[i];
-				var labelName = label.getElementsByClassName('selected-name')[0].innerHTML;
-				if (labelName === name) {
-					selectedList.insertBefore(label, selectedList.childNodes[i - 1]);
-				}
-			}
+		var upSelectedIndex = selectedIndex - 1;
+		if (upSelectedIndex > -1) {
+			var tempLayer = overlays[selectedIndex];
+			overlays[selectedIndex] = overlays[upSelectedIndex];
+			overlays[upSelectedIndex] = tempLayer;
 		}
 		this.selectedOverlays = overlays;
 		return this._reOrderOverlay();
 	},
 
 	_downSelectedOverlay: function(name) {
-		var layers = [];
-		var self = this;
 		var overlays = this.selectedOverlays;
 		var selectedIndex = overlays.indexOf(name);
 		var upSelectedIndex = selectedIndex;
@@ -616,15 +657,6 @@ L.Control.AutoLayers = L.Control.extend({
 			var tempLayer = overlays[upSelectedIndex];
 			overlays[upSelectedIndex] = overlays[selectedIndex];
 			overlays[selectedIndex] = tempLayer;
-			var selectedList = this._selectedList;
-			var selected = selectedList.children;
-			for (i = 0; i < selected.length; i++) {
-				var label = selected[i];
-				var labelName = label.getElementsByClassName('selected-name')[0].innerHTML;
-				if (labelName === name) {
-					selectedList.insertBefore(label, selectedList.childNodes[i + 1]);
-				}
-			}
 		}
 		this.selectedOverlays = overlays;
 		return this._reOrderOverlay();
@@ -637,26 +669,36 @@ L.Control.AutoLayers = L.Control.extend({
 		//overlays.reverse();
 		var totalSelected = overlays.length;
 		var maxBase = zIndexBase + totalSelected;
-		for (i = 0; i < overlays.length; i++) {
+		for (var i = 0; i < overlays.length; i++) {
 			var layerName = overlays[i];
 			var layer = self._getLayerByName(layerName).layer;
 			layer.setZIndex(maxBase);
 			maxBase--;
 		};
-
+		return this._buildSelectedOverlays();
 	},
 
 	_setOrderOverlay: function() {
 		var zIndexBase = this.zIndexBase;
 		var overlays = this.selectedOverlays;
 		var maxBase = zIndexBase + overlays.length;
-		for (i = 0; i < overlays.length; i++) {
+		for (var i = 0; i < overlays.length; i++) {
 			layer.setZIndex(maxBase);
 			overlays[key] = layer;
 		}
 		this.selectedOverlays = overlays;
 	},
 
+	_selectOverlays: function() {
+		var selectedOverlays = this.mapConfig.selectedOverlays;
+		var overLays = this.overLays;
+		for (var i = 0; i < selectedOverlays.length; i++) {
+			var overlay = selectedOverlays[i];
+			if (overLays[overlay]) {
+				overLays[overlay].addTo(map);
+			}
+		}
+	},
 	_addLayer: function(layer, name, overlay) {
 		var id = L.stamp(layer);
 
@@ -669,10 +711,6 @@ L.Control.AutoLayers = L.Control.extend({
 		if (this.options.autoZIndex && layer.setZIndex) {
 			this._lastZIndex++;
 			layer.setZIndex(this._lastZIndex);
-		}
-
-		if (overlay) {
-
 		}
 	},
 
@@ -719,32 +757,6 @@ L.Control.AutoLayers = L.Control.extend({
 
 		if (type === 'overlayadd') {
 			this._addSelectedOverlay(obj.name);
-			//Now set up for removing an overlay via the selected window
-			var selectedOverlays = this._selectedList.children;
-			for (l = 0; l < selectedOverlays.length; l++) {
-				if (selectedOverlays[l].getElementsByClassName('selected-name')[0].innerHTML === obj.name) {
-					var selected = selectedOverlays[l];
-					var selectedRemove = selected.getElementsByClassName('selected-remove')[0];
-					var selectedUp = selected.getElementsByClassName('selected-up')[0];
-					var selectedDown = selected.getElementsByClassName('selected-down')[0];
-					L.DomEvent.addListener(selectedRemove, 'click', function(e) {
-						var name = this.parentNode.getElementsByClassName('selected-name')[0].innerHTML;
-						var layer = self._getLayerByName(name);
-						self._map.removeLayer(layer.layer);
-					});
-
-					//Now setup for up and down ordering
-					L.DomEvent.addListener(selectedUp, 'click', function(e) {
-						var name = this.parentNode.getElementsByClassName('selected-name')[0].innerHTML;
-						self._upSelectedOverlay(name);
-					});
-
-					L.DomEvent.addListener(selectedDown, 'click', function(e) {
-						var name = this.parentNode.getElementsByClassName('selected-name')[0].innerHTML;
-						self._downSelectedOverlay(name);
-					});
-				}
-			}
 		}
 
 		if (type === 'overlayremove') {
@@ -805,7 +817,7 @@ L.Control.AutoLayers = L.Control.extend({
 
 		this._handlingClick = true;
 
-		for (i = 0; i < inputsLen; i++) {
+		for (var i = 0; i < inputsLen; i++) {
 			input = inputs[i];
 			obj = this._layers[input.layerId];
 			if (input.type === 'checkbox' || input.type === "radio") {
@@ -855,3 +867,31 @@ function ajax(url, callback) {
 		}
 	}
 };
+
+//Here we override the attribution control's update method to better suit multilayers
+L.Control.Attribution = L.Control.Attribution.extend({
+	_update: function() {
+		if (!this._map) {
+			return;
+		}
+
+		var attribs = [];
+
+		for (var i in this._attributions) {
+			if (this._attributions[i]) {
+				attribs.push(i);
+			}
+		}
+
+		var prefixAndAttribs = [];
+
+		if (this.options.prefix) {
+			prefixAndAttribs.push(this.options.prefix);
+		}
+		if (attribs.length) {
+			prefixAndAttribs.push(attribs.join(' <br /> '));
+		}
+
+		this._container.innerHTML = prefixAndAttribs.join(' | ');
+	}
+});
