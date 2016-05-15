@@ -60,7 +60,10 @@
 
     var config = 
     {
-
+    overlays: overlays,
+    baseLayers: baseLayers,
+    selectedBasemap: 'Streets',
+    selectedOverlays: ['Cities'],
     mapServers: [{
         "url": "http://services.arcgisonline.com/arcgis/rest/services",
         "dictionary": "http://services.arcgisonline.com/arcgis/rest/services?f=pjson",
@@ -80,6 +83,7 @@
     ]};
 
   var control =   L.control.autolayers(config).addTo(map);
+  control.addOverlay(cities, "Cities");
     </script>
 </body>
 

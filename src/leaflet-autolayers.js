@@ -12,6 +12,7 @@ L.Control.AutoLayers = L.Control.extend({
 	baseMaps: [],
 	selectedOverlays: [],
 	zIndexBase: 1,
+	selectedBasemap: null,
 
 	countZIndexBase: function(layers) {
 		for (i = 0; i < layers.length; i++) {
@@ -25,6 +26,23 @@ L.Control.AutoLayers = L.Control.extend({
 	initialize: function(mapConfig, options) {
 		L.setOptions(this, options);
 		this.mapConfig = mapConfig;
+		this._layers = {};
+		this._lastZIndex = 0;
+		this._handlingClick = false;
+		var baseLayers = mapConfig.baseLayers;
+		var overlays = mapConfig.overlays;
+		var selectedBasemap = this.selectedBasemap = mapConfig.selectedBasemap;
+
+		for (var i in baseLayers) {
+			this._addLayer(baseLayers[i], i);
+			if (i === selectedBasemap) {
+				baseLayers[i].addTo(map);
+			}
+		}
+
+		for (i in overlays) {
+			this._addLayer(overlays[i], i, true);
+		}
 		this.fetchMapData();
 	},
 
@@ -363,9 +381,6 @@ L.Control.AutoLayers = L.Control.extend({
 		//populate what is each in the global properties
 		var baseLayers = this.baseMaps;
 		var overlays = this.overLays;
-		this._layers = {};
-		this._lastZIndex = 0;
-		this._handlingClick = false;
 
 		for (var i in baseLayers) {
 			this._addLayer(baseLayers[i], i);
