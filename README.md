@@ -70,7 +70,11 @@ Sample Configuration that pulls from the public ArcGIS and Navy Research Labs ti
 
 ## Deployment
 
+Make sure all your layers you include are of the same projection. Currently map projection redrawing based on baselayer is not implemented, so if you don't have matching layer projections, things will not line up properly.
+
+
 Note: because of the nature of not all browsers supporting ES6 and not always having jQuery, the default calls provided are SYNCHRONOUS and therefore will cause delay in loading the map as it waits for each server to respond with its list of layers.
+
 
 If you have a build environment that supports promises (angular, ember, react or jquery framework), you can do two things:
 
