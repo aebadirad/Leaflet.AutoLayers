@@ -21,13 +21,6 @@
         L.marker([39.73, -104.8]).bindPopup('This is Aurora, CO.').addTo(cities),
         L.marker([39.77, -105.23]).bindPopup('This is Golden, CO.').addTo(cities);
 
-    var towns = new L.LayerGroup();
-
-    L.marker([39.60, -105.00]).bindPopup('This is Littleton, CO.').addTo(towns),
-        L.marker([39.70, -104.90]).bindPopup('This is Denver, CO.').addTo(towns),
-        L.marker([39.70, -104.0]).bindPopup('This is Aurora, CO.').addTo(towns),
-        L.marker([39.70, -105.20]).bindPopup('This is Golden, CO.').addTo(towns);
-
     var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
         'Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -42,9 +35,25 @@
             attribution: mbAttr
         });
 
+    var wgs84 = L.extend({}, L.CRS, {
+        projection: L.extend({}, L.Projection.LonLat, {
+            bounds: L.bounds([-180, -90], [180, 90])
+        }),
+        transformation: new L.Transformation(1 / 180, 1, -1 / 180, 0.5),
+        getSize: function(zoom) {
+            var b = this.projection.bounds,
+                s = this.scale(zoom),
+                min = this.transformation.transform(b.min, s),
+                max = this.transformation.transform(b.max, s);
+
+            return L.point(Math.abs(max.x - min.x), Math.abs(max.y - min.y));
+        }
+    });
+
     var map = L.map('map', {
-        center: [0, 0],
-        zoom: 1
+        crs: wgs84,
+        zoom: 1,
+        center: [0,0]
     });
 
     var baseLayers = {
@@ -53,15 +62,14 @@
     };
 
     var overlays = {
-        "Cities": cities,
-        "Towns": towns
+        "Cities": cities
     };
 
 
     var config = {
         overlays: overlays,
         baseLayers: baseLayers,
-        selectedBasemap: 'Streets',
+        selectedBasemap: 'ESRI_Imagery_World_2D',
         selectedOverlays: ["ASTER Digital Elevation Model 30M", "ASTER Digital Elevation Model Color 30M", "Cities"],
         mapServers: [{
             "url": "http://services.arcgisonline.com/arcgis/rest/services",
