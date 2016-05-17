@@ -37,6 +37,7 @@ L.Control.AutoLayers = L.Control.extend({
 	selectedOverlays: [],
 	zIndexBase: 1,
 	selectedBasemap: null,
+	layersToAdd: {},
 
 	countZIndexBase: function(layers) {
 		for (var i = 0; i < layers.length; i++) {
@@ -400,105 +401,17 @@ L.Control.AutoLayers = L.Control.extend({
 	fetchMapDictionary: function(mapServer) {
 		var self = this;
 		var layers = [];
-		var folders = [];
-		var mapServerName = mapServer.name;
-		var mapPass = -1;
-		var blacklist = mapServer.blacklist;
-		var whitelist = mapServer.whitelist;
+		this.layersToAdd[mapServer.name] = [];
 		var url = mapServer.dictionary.replace(/&amp;/g, '&');
 		ajax(url, function(res) {
+
 			if (mapServer.type === 'esri') {
 				var response = JSON.parse(res);
-				//check to see if we have any root folder layers
-				var services = response.services;
-				//check to see if any folders, if none it'll be empty array
-				folders = response.folders;
-				for (var i = 0; i < services.length; i++) {
-					if (services[i].type === 'MapServer') {
-						var layerName = services[i].name;
-						var layerUrl = mapServer.url + '/' + layerName +
-							mapServer.tileUrl;
-						var url = mapServer.url + '/' + layerName +
-							'/MapServer?f=pjson';
-						mapPass = -1;
-						if (mapServer.baseLayers) {
-							mapPass = mapServer.baseLayers.indexOf(layerName);
-						}
-						if ((whitelist && whitelist.indexOf(layerName) > -1) || (blacklist && blacklist.indexOf(
-								layerName) === -1) || (!blacklist && !whitelist)) {
-							if (!(mapServer.baseLayers) || mapPass > -1) {
-								layers.push({
-									detailsUrl: url,
-									url: layerUrl,
-									name: layerName,
-									type: 'esri',
-									baseLayer: true,
-									attribution: mapServerName + ' - ' + layerName
-								});
-							} else {
-								layers.push({
-									detailsUrl: url,
-									url: layerUrl,
-									name: layerName,
-									type: 'esri',
-									baseLayer: false,
-									attribution: mapServerName + ' - ' + layerName
-								});
-							}
-						}
-					}
+				var layersToAdd = self._parseESRILayers(mapServer, response);
+				if (layersToAdd && layersToAdd.length > 0) {
+					layers = layersToAdd;
 				}
-				//now we check folders, why? we don't want calls within calls
-				if (folders.length > 0) {
-					for (var f = 0; f < folders.length; f++) {
-						var folderUrl = mapServer.url + '/' + folders[f] +
-							'?f=pjson';
-						ajax(folderUrl, function(res) {
-							var response = JSON.parse(res);
-							//check to see if we have any layers here
-							var services = response.services;
-							for (var i = 0; i < services.length; i++) {
-								if (services[i].type === 'MapServer') {
-									var fullName = services[i].name.split('/');
-									var layerName = fullName[1];
-									var folderName = fullName[0];
-									var layerUrl = mapServer.url + '/' + folderName +
-										'/' + layerName + mapServer.tileUrl;
-									var url = mapServer.url + '/' + folderName +
-										'/' + layerName + '/MapServer?f=pjson';
-									mapPass = -1;
-									if (mapServer.baseLayers) {
-										mapPass = mapServer.baseLayers.indexOf(layerName);
-									}
-									if ((whitelist && whitelist.indexOf(layerName) > -1) || (blacklist && blacklist.indexOf(
-											layerName) === -1) || (!blacklist && !whitelist)) {
-										if (!(mapServer.baseLayers) || mapPass > -1) {
-											layers.push({
-												detailsUrl: url,
-												url: layerUrl,
-												name: layerName,
-												type: 'esri',
-												baseLayer: true,
-												attribution: mapServerName + ' - ' +
-													layerName
-											});
-										} else {
-											layers.push({
-												detailsUrl: url,
-												url: layerUrl,
-												name: layerName,
-												type: 'esri',
-												baseLayer: false,
-												attribution: mapServerName + ' - ' +
-													layerName
-											});
-										}
-									}
-								}
-							}
-						});
-					}
-				}
+
 			} else if (mapServer.type === 'nrltileserver') {
 				var x2js = new X2JS();
 				var parser = new DOMParser();
@@ -508,37 +421,11 @@ L.Control.AutoLayers = L.Control.extend({
 				var capLayers = capability.Layer;
 				var contactInfo = parsedRes.WMT_MS_Capabilities.Service.ContactInformation;
 				var crs = parseInt(capability.SRS.substring(5));
-				for (var j = 0; j < capLayers.length; j++) {
-					var layer = capLayers[j];
-					var layerObj = {
-						crs: crs,
-						maxZoom: 18,
-						name: layer.Title,
-						type: 'nrl',
-						zoomOffset: 2,
-						tms: false,
-						noWrap: false,
-						continuousWorld: true,
-						attribution: mapServerName + ': ' + contactInfo.ContactPersonPrimary
-							.ContactOrganization + ' - ' + layer.Title,
-						url: mapServer.url + '/openlayers/' + layer.Name +
-							mapServer.tileUrl
-					};
-					mapPass = -1;
-					if (mapServer.baseLayers) {
-						mapPass = mapServer.baseLayers.indexOf(layer.Name);
-					}
-					if ((whitelist && whitelist.indexOf(layer.Name) > -1) || (blacklist && blacklist.indexOf(
-							layer.Name) === -1) || (!blacklist && !whitelist)) {
-						if (!(mapServer.baseLayers) || mapPass > -1) {
-							layerObj.baseLayer = true;
-							layers.push(layerObj);
-						} else {
-							layerObj.baseLayer = false;
-							layers.push(layerObj);
-						}
-					}
+				var layersToAdd = self._parseNRLLayers(mapServer, capLayers, contactInfo, crs);
+				if (layersToAdd && layersToAdd.length > 0) {
+					layers = layersToAdd;
 				}
+
 			} else if (mapServer.type === 'wms') {
 				var x2js = new X2JS();
 				var parser = new DOMParser();
@@ -547,78 +434,178 @@ L.Control.AutoLayers = L.Control.extend({
 				var capability = parsedRes.WMS_Capabilities.Capability.Layer;
 				var capLayers = capability.Layer;
 				var contactInfo = parsedRes.WMS_Capabilities.Service.ContactInformation;
-				var crs = parseInt(capability.CRS[0].substring(5));
-				for (var j = 0; j < capLayers.length; j++) {
-					var layer = capLayers[j];
-					if (layer.Layer && layer.Layer.length > 1) {
-						for (var l = 0; l < layer.Layer.length; l++) {
-							var lowerLayer = layer.Layer[l];
-							var layerObj = {
-								crs: crs,
-								maxZoom: 18,
-								name: lowerLayer.Name,
-								type: 'wms',
-								zoomOffset: 1,
-								tms: false,
-								noWrap: false,
-								continuousWorld: true,
-								title: lowerLayer.Title,
-								attribution: mapServerName + ': ' + contactInfo.ContactPersonPrimary
-									.ContactOrganization + ' - ' + lowerLayer.Title,
-								url: mapServer.url
-							};
-							mapPass = -1;
-							if (mapServer.baseLayers) {
-								mapPass = mapServer.baseLayers.indexOf(lowerLayer.Title);
-							}
-							if ((whitelist && whitelist.indexOf(lowerLayer.Title) > -1) || (blacklist && blacklist.indexOf(
-									lowerLayer.Title) === -1) || (!blacklist && !whitelist)) {
-								if (!(mapServer.baseLayers) || mapPass > -1) {
-									layerObj.baseLayer = true;
-									layers.push(layerObj);
-								} else {
-									layerObj.baseLayer = false;
-									layers.push(layerObj);
-								}
-							}
-
-						}
-					} else {
-						var layerObj = {
-							crs: crs,
-							maxZoom: 18,
-							name: layer.Name,
-							type: 'wms',
-							zoomOffset: 1,
-							tms: false,
-							noWrap: false,
-							continuousWorld: true,
-							title: lowerLayer.Title,
-							attribution: mapServerName + ': ' + contactInfo.ContactPersonPrimary
-								.ContactOrganization + ' - ' + layer.Title,
-							url: mapServer.url
-						};
-						mapPass = -1;
-						if (mapServer.baseLayers) {
-							mapPass = mapServer.baseLayers.indexOf(layer.Title);
-						}
-						if ((whitelist && whitelist.indexOf(layer.Title) > -1) || (blacklist && blacklist.indexOf(
-								layer.Title) === -1) || (!blacklist && !whitelist)) {
-							if (!(mapServer.baseLayers) || mapPass > -1) {
-								layerObj.baseLayer = true;
-								layers.push(layerObj);
-							} else {
-								layerObj.baseLayer = false;
-								layers.push(layerObj);
-							}
-						}
-					}
+				var crs = capability.CRS[0];
+				var layersToAdd = self._parseWMSLayers(mapServer, capLayers, contactInfo, crs);
+				if (layersToAdd && layersToAdd.length > 0) {
+					layers = layersToAdd;
 				}
 			}
-
+			//let's filter this list of any nulls (blacklists)
+			layers = layers.filter(function(l) {
+				return (l !== undefined && l !== null);
+			});
 			self.mapLayers.push(layers);
 			self._initMaps(layers);
 		});
+	},
+
+	_parseESRILayers: function(mapServer, response) {
+		var self = this;
+		//check to see if we have any root folder layers
+		var services = response.services;
+		var folders = [];
+		var layers = [];
+		var layersToAdd = [];
+		//check to see if any folders, if none it'll be empty array
+		folders = response.folders;
+		for (var i = 0; i < services.length; i++) {
+			if (services[i].type === 'MapServer') {
+				layersToAdd.push(self._parseESRILayer(mapServer, services[i]));
+			}
+		}
+		//now we check folders, why? we don't want calls within calls
+		if (folders.length > 0) {
+			layersToAdd.concat(self._parseESRIFolders(mapServer, folders));
+		}
+		return layersToAdd;
+	},
+
+	_parseESRIFolders: function(mapServer, folders) {
+		var self = this;
+		var layersToAdd = [];
+		for (var f = 0; f < folders.length; f++) {
+			var folderUrl = mapServer.url + '/' + folders[f] +
+				'?f=pjson';
+			ajax(folderUrl, function(res) {
+				var response = JSON.parse(res);
+				//check to see if we have any layers here
+				var services = response.services;
+				for (var i = 0; i < services.length; i++) {
+					if (services[i].type === 'MapServer') {
+						layersToAdd.push(self._parseESRILayer(mapServer, services[i], true));
+					}
+				}
+			});
+		}
+		return layersToAdd;
+
+	},
+	_parseESRILayer: function(mapServer, layer, folder = false) {
+		var layerToAdd = [];
+		if (folder) {
+			var fullName = layer.name.split('/');
+			var layerName = fullName[1];
+			var folderName = fullName[0];
+			var layerUrl = mapServer.url + '/' + folderName +
+				'/' + layerName + mapServer.tileUrl;
+			var url = mapServer.url + '/' + folderName +
+				'/' + layerName + '/MapServer?f=pjson';
+
+		} else {
+			var layerName = layer.name;
+			var layerUrl = mapServer.url + '/' + layerName +
+				mapServer.tileUrl;
+			var url = mapServer.url + '/' + layerName +
+				'/MapServer?f=pjson';
+		}
+		var layerObj = {
+			detailsUrl: url,
+			url: layerUrl,
+			name: layerName,
+			type: 'esri',
+			attribution: mapServer.name + ' - ' + layerName
+		};
+		layerToAdd = this._createLayer(mapServer, layerObj, layerName);
+		return layerToAdd;
+
+	},
+	_parseNRLLayers: function(mapServer, layers, contactInfo, crs) {
+		var self = this;
+		for (var j = 0; j < layers.length; j++) {
+			var layer = layers[j];
+			if (layer.Layer && layer.Layer.length > 1) {
+				self.layersToAdd[mapServer.name].concat(self._parseNRLLayers(mapServer, layer.Layer,
+					contactInfo, crs));
+			} else {
+				self.layersToAdd[mapServer.name].push(self._parseNRLLayer(mapServer, layer, contactInfo, crs));
+			}
+		}
+		return this.layersToAdd[mapServer.name];
+	},
+	_parseNRLLayer: function(mapServer, layer, contactInfo, crs) {
+		var layerToAdd = [];
+		var layerObj = {
+			crs: crs,
+			maxZoom: 18,
+			name: layer.Title,
+			type: 'nrl',
+			zoomOffset: 2,
+			tms: false,
+			noWrap: false,
+			continuousWorld: true,
+			attribution: mapServer.name + ': ' + contactInfo.ContactPersonPrimary
+				.ContactOrganization + ' - ' + layer.Title,
+			url: mapServer.url + '/openlayers/' + layer.Name +
+				mapServer.tileUrl
+		};
+
+		layerToAdd = this._createLayer(mapServer, layerObj, layer.Name);
+		return layerToAdd;
+
+	},
+	_parseWMSLayers: function(mapServer, layers, contactInfo, crs) {
+		var self = this;
+		for (var j = 0; j < layers.length; j++) {
+			var layer = layers[j];
+			if (layer.Layer && layer.Layer.length > 1) {
+				self.layersToAdd[mapServer.name].concat(self._parseWMSLayers(mapServer, layer.Layer,
+					contactInfo, crs));
+			} else {
+				self.layersToAdd[mapServer.name].push(self._parseWMSLayer(mapServer, layer, contactInfo, crs));
+			}
+		}
+		return this.layersToAdd[mapServer.name];
+	},
+
+	_parseWMSLayer: function(mapServer, layer, contactInfo, crs) {
+		var layerToAdd = [];
+		var layerObj = {
+			crs: crs,
+			maxZoom: 18,
+			name: layer.Name,
+			type: 'wms',
+			zoomOffset: 1,
+			tms: false,
+			noWrap: false,
+			continuousWorld: true,
+			title: layer.Title,
+			attribution: mapServer.name + ': ' + contactInfo.ContactPersonPrimary
+				.ContactOrganization + ' - ' + layer.Title,
+			url: mapServer.url
+		};
+		layerToAdd = this._createLayer(mapServer, layerObj, layer.Title);
+		return layerToAdd;
+
+	},
+
+	_createLayer: function(mapServer, layer, name) {
+		var blacklist = mapServer.blacklist;
+		var whitelist = mapServer.whitelist;
+		var layerToAdd = null;
+		var mapPass = -1;
+		if (mapServer.baseLayers) {
+			mapPass = mapServer.baseLayers.indexOf(name);
+		}
+		if ((whitelist && whitelist.indexOf(name) > -1) || (blacklist && blacklist.indexOf(
+				name) === -1) || (!blacklist && !whitelist)) {
+			if (!(mapServer.baseLayers) || mapPass > -1) {
+				layer.baseLayer = true;
+			} else {
+				layer.baseLayer = false;
+			}
+			layerToAdd = layer;
+		}
+		return layerToAdd;
 	},
 
 	_getLayerByName: function(name) {
