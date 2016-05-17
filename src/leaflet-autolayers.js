@@ -510,7 +510,7 @@ L.Control.AutoLayers = L.Control.extend({
 				var contactInfo = parsedRes.WMT_MS_Capabilities.Service.ContactInformation;
 				var crs = parseInt(capability.SRS.substring(5));
 				this.layersToAdd = [];
-				layersToAdd = self._parseWMSLayers(mapServer, capLayers, contactInfo, crs);
+				layersToAdd = self._parseNRLLayers(mapServer, capLayers, contactInfo, crs);
 				if (layersToAdd && layersToAdd.length > 0) {
 					layers = layersToAdd;
 				}
@@ -568,7 +568,7 @@ L.Control.AutoLayers = L.Control.extend({
 			tms: false,
 			noWrap: false,
 			continuousWorld: true,
-			attribution: mapServerName + ': ' + contactInfo.ContactPersonPrimary
+			attribution: mapServer.Name + ': ' + contactInfo.ContactPersonPrimary
 				.ContactOrganization + ' - ' + layer.Title,
 			url: mapServer.url + '/openlayers/' + layer.Name +
 				mapServer.tileUrl
