@@ -347,14 +347,15 @@ L.Control.AutoLayers = L.Control.extend({
 			if (!mapLayer.baseLayer) {
 				self.zIndexBase++;
 			}
+			//set some default layer options
 			var layerOpts = {
 				noWrap: mapLayer.noWrap ? mapLayer.noWrap : false,
 				continuousWorld: mapConfig.continuousWorld ? mapConfig.continuousWorld : true,
-				tileSize: 256,
+				tileSize: mapConfig.tileSize ? mapConfig.tileSize : 256,
 				tms: mapLayer.tms ? mapLayer.tms : false,
 				zoomOffset: mapLayer.zoomOffset ? mapLayer.zoomOffset : 0,
 				minZoom: 1,
-				maxZoom: mapConfig.maxZoom ? mapConfig.maxZoom : 12,
+				maxZoom: mapConfig.maxZoom ? mapConfig.maxZoom : 15,
 				attribution: mapLayer.attribution ? mapLayer.attribution : 'Source Currently Unknown'
 			};
 			var layer;

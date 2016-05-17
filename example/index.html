@@ -77,6 +77,7 @@
             "tileUrl": "/MapServer/tile/{z}/{y}/{x}",
             "name": "ArcGIS Online",
             "type": "esri",
+            "maxZoom": 15,
             "baseLayers": ["ESRI_Imagery_World_2D", "ESRI_StreetMap_World_2D", "NGS_Topo_US_2D"],
             "whitelist": ["ESRI_Imagery_World_2D", "ESRI_StreetMap_World_2D", "NGS_Topo_US_2D"]
         }, {
@@ -85,6 +86,7 @@
             "tileUrl": "/{z}/{x}/{y}.png",
             "name": "Navy NRL",
             "type": "nrltileserver",
+            "maxZoom": 16,
             "baseLayers": ["bluemarble", "Landsat7", "DTED0_GRID_COLOR1", "ETOPO1_COLOR1", "NAIP", "DRG_AUTO"],
             "blacklist": ["BlackMarble"]
         }]
