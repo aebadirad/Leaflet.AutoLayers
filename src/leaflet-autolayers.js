@@ -1,3 +1,27 @@
+/*
+The MIT License (MIT)
+
+Copyright (c) 2016 Alex Ebadirad, https://github.com/aebadirad/Leaflet.AutoLayers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 //we extend the control object to include the new AutoLayers object
 
 L.Control.AutoLayers = L.Control.extend({
@@ -54,7 +78,6 @@ L.Control.AutoLayers = L.Control.extend({
 		map
 			.on('layeradd', this._onLayerChange, this)
 			.on('layerremove', this._onLayerChange, this);
-		this._selectOverlays();
 		return this._container;
 	},
 
@@ -314,19 +337,15 @@ L.Control.AutoLayers = L.Control.extend({
 
 	},
 
-	_initMaps: function() {
-		var allMapLayers = this.mapLayers;
+	_initMaps: function(mapLayers) {
 		var mapConfig = this.mapConfig;
 		var self = this;
 		var selected;
-		for (var m = 0; m < allMapLayers.length; m++) {
-			var mapLayers = allMapLayers[m];
 			for (var i = 0; i < mapLayers.length; i++) {
 				var mapLayer = mapLayers[i];
 				if (!mapLayer.baseLayer) {
 					self.zIndexBase++;
 				}
-
 				var layerOpts = {
 					noWrap: mapLayer.noWrap ? mapLayer.noWrap : false,
 					continuousWorld: mapConfig.continuousWorld ? mapConfig.continuousWorld : true,
@@ -351,9 +370,11 @@ L.Control.AutoLayers = L.Control.extend({
 				}
 				if (mapLayer.baseLayer) {
 					self.baseMaps[String(mapLayer.name).trim()] = layer;
+					self._addLayer(layer, mapLayer.name);
 
 				} else {
 					self.overLays[String(mapLayer.name).trim()] = layer;
+					self._addLayer(layer, mapLayer.name, true);
 				}
 				if (mapLayer.baseLayer && !self.selectedBasemap) {
 					self.selectedBasemap = mapLayer.name.trim();
@@ -363,20 +384,7 @@ L.Control.AutoLayers = L.Control.extend({
 					layer.addTo(map);
 				}
 			}
-		}
-
-		//populate what is each in the global properties
-		var baseLayers = this.baseMaps;
-		var overlays = this.overLays;
-
-		for (var i in baseLayers) {
-			this._addLayer(baseLayers[i], i);
-		}
-
-		for (var i in overlays) {
-			this._addLayer(overlays[i], i, true);
-		}
-
+		this._selectOverlays();
 	},
 
 	fetchMapData: function() {
@@ -385,14 +393,11 @@ L.Control.AutoLayers = L.Control.extend({
 		var mapLayers = [];
 		for (var i = 0; i < mapServers.length; i++) {
 			var layers = this.fetchMapDictionary(mapServers[i]);
-			mapLayers.push(layers);
 		}
-		this.mapLayers = mapLayers;
-		return this._initMaps();
-
 	},
 
 	fetchMapDictionary: function(mapServer) {
+		var self = this;
 		var layers = [];
 		var folders = [];
 		var mapServerName = mapServer.name;
@@ -534,8 +539,10 @@ L.Control.AutoLayers = L.Control.extend({
 					}
 				}
 			}
+
+			self.mapLayers.push(layers);
+			self._initMaps(layers);
 		});
-		return layers;
 	},
 
 	_getLayerByName: function(name) {
@@ -871,7 +878,7 @@ function ajax(url, callback) {
 	var context = this,
 		request = new XMLHttpRequest();
 	request.onreadystatechange = change;
-	request.open('GET', url, false);
+	request.open('GET', url, true);
 	request.send();
 
 	function change() {
