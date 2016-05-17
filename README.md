@@ -4,7 +4,7 @@ A dynamic leaflet layers control that pulls from multiple mapservers and manages
 
 ## Getting Started
 
-See [this demo page](http://aebadirad.github.io/Leaflet.AutoLayers/example/index.html) for an example.
+See [this demo page](http://aebadirad.github.io/Leaflet.AutoLayers/example/index.html) for a full example or [this barebones demonstration](http://aebadirad.github.io/Leaflet.AutoLayers/example/simple.html) of the simpliest way to configure the plugin.
 
 
 ### Configuration Breakdown
