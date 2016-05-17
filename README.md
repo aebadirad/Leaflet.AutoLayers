@@ -6,6 +6,8 @@ A dynamic leaflet layers control that pulls from multiple mapservers and manages
 
 See [this demo page](http://aebadirad.github.io/Leaflet.AutoLayers/example/index.html) for a full example or [this barebones demonstration](http://aebadirad.github.io/Leaflet.AutoLayers/example/simple.html) of the simpliest way to configure the plugin.
 
+New! WMS support! Huzzah! Splits the WMS layers up for you so that you can turn them off/on and declare basemaps, automatically pulls layers. [See this demo for an example](http://aebadirad.github.io/Leaflet.AutoLayers/example/wms.html).
+
 
 ### Configuration Breakdown
 
@@ -20,7 +22,7 @@ List of possible configuration keys:
   * url: REQUIRED - the base url of the service (e.g. http://services.arcgisonline.com/arcgis/rest/services)
   * baseLayers: RECOMMENDED - tells the control what layers to place in base maps, else all from this server go into overlays
   * dictionary: REQUIRED - where the published service list dictionary is (e.g. http://services.arcgisonline.com/arcgis/rest/services?f=pjson)
-  * tileUrl: REQUIRED - the part that comes after the layer name in the tileserver with xyz coords placeholders (e.g. /MapServer/tile/{z}/{y}/{x} or /{z}/{x}/{y}.png)
+  * tileUrl: REQUIRED - (EXCEPT WMS) - the part that comes after the layer name in the tileserver with xyz coords placeholders (e.g. /MapServer/tile/{z}/{y}/{x} or /{z}/{x}/{y}.png)
   * name: REQUIRED - the name of the server, or however you want to identify the source
   * type: REQUIRED - current options: esri or nrltileserver
   * whitelist: OPTIONAL - ONLY display these layers, matches against both baselayers and overlays. Do not use with blacklist.
