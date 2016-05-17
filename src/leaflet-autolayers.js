@@ -78,7 +78,6 @@ L.Control.AutoLayers = L.Control.extend({
 		map
 			.on('layeradd', this._onLayerChange, this)
 			.on('layerremove', this._onLayerChange, this);
-		this._selectOverlays();
 		return this._container;
 	},
 
@@ -338,19 +337,15 @@ L.Control.AutoLayers = L.Control.extend({
 
 	},
 
-	_initMaps: function() {
-		var allMapLayers = this.mapLayers;
+	_initMaps: function(mapLayers) {
 		var mapConfig = this.mapConfig;
 		var self = this;
 		var selected;
-		for (var m = 0; m < allMapLayers.length; m++) {
-			var mapLayers = allMapLayers[m];
 			for (var i = 0; i < mapLayers.length; i++) {
 				var mapLayer = mapLayers[i];
 				if (!mapLayer.baseLayer) {
 					self.zIndexBase++;
 				}
-
 				var layerOpts = {
 					noWrap: mapLayer.noWrap ? mapLayer.noWrap : false,
 					continuousWorld: mapConfig.continuousWorld ? mapConfig.continuousWorld : true,
@@ -375,9 +370,11 @@ L.Control.AutoLayers = L.Control.extend({
 				}
 				if (mapLayer.baseLayer) {
 					self.baseMaps[String(mapLayer.name).trim()] = layer;
+					self._addLayer(layer, mapLayer.name);
 
 				} else {
 					self.overLays[String(mapLayer.name).trim()] = layer;
+					self._addLayer(layer, mapLayer.name, true);
 				}
 				if (mapLayer.baseLayer && !self.selectedBasemap) {
 					self.selectedBasemap = mapLayer.name.trim();
@@ -387,20 +384,7 @@ L.Control.AutoLayers = L.Control.extend({
 					layer.addTo(map);
 				}
 			}
-		}
-
-		//populate what is each in the global properties
-		var baseLayers = this.baseMaps;
-		var overlays = this.overLays;
-
-		for (var i in baseLayers) {
-			this._addLayer(baseLayers[i], i);
-		}
-
-		for (var i in overlays) {
-			this._addLayer(overlays[i], i, true);
-		}
-
+		this._selectOverlays();
 	},
 
 	fetchMapData: function() {
@@ -409,14 +393,11 @@ L.Control.AutoLayers = L.Control.extend({
 		var mapLayers = [];
 		for (var i = 0; i < mapServers.length; i++) {
 			var layers = this.fetchMapDictionary(mapServers[i]);
-			mapLayers.push(layers);
 		}
-		this.mapLayers = mapLayers;
-		return this._initMaps();
-
 	},
 
 	fetchMapDictionary: function(mapServer) {
+		var self = this;
 		var layers = [];
 		var folders = [];
 		var mapServerName = mapServer.name;
@@ -558,8 +539,10 @@ L.Control.AutoLayers = L.Control.extend({
 					}
 				}
 			}
+
+			self.mapLayers.push(layers);
+			self._initMaps(layers);
 		});
-		return layers;
 	},
 
 	_getLayerByName: function(name) {
@@ -895,7 +878,7 @@ function ajax(url, callback) {
 	var context = this,
 		request = new XMLHttpRequest();
 	request.onreadystatechange = change;
-	request.open('GET', url, false);
+	request.open('GET', url, true);
 	request.send();
 
 	function change() {

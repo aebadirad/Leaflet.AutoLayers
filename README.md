@@ -6,6 +6,7 @@ A dynamic leaflet layers control that pulls from multiple mapservers and manages
 
 See [this demo page](http://aebadirad.github.io/Leaflet.AutoLayers/example/index.html) for an example.
 
+
 ### Configuration Breakdown
 
 The configuration is an object that is passed in as the first signature on the method call (L.control.autolayers()). The second is the standard Layers options object which is optional.
@@ -71,15 +72,6 @@ Sample Configuration that pulls from the public ArcGIS and Navy Research Labs ti
 ## Deployment
 
 Make sure all your layers you include are of the same projection. Currently map projection redrawing based on baselayer is not implemented, so if you don't have matching layer projections, things will not line up properly.
-
-
-Note: because of the nature of not all browsers supporting ES6 and not always having jQuery, the default calls provided are SYNCHRONOUS and therefore will cause delay in loading the map as it waits for each server to respond with its list of layers.
-
-
-If you have a build environment that supports promises (angular, ember, react or jquery framework), you can do two things:
-
-1. Replace the builtin ajax function with a deferred/promise supported call.
-2. Pull out the code that does the calls and simply build the baselayers/overlays object and pass it in with blank mapservers entries in the config. This will have the same effect and you'll still get all the layer management capabilities.
 
 ## Contributing
 
