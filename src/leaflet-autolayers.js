@@ -37,6 +37,7 @@ L.Control.AutoLayers = L.Control.extend({
 	selectedOverlays: [],
 	zIndexBase: 1,
 	selectedBasemap: null,
+	layersToAdd: [],
 
 	countZIndexBase: function(layers) {
 		for (var i = 0; i < layers.length; i++) {
@@ -508,37 +509,12 @@ L.Control.AutoLayers = L.Control.extend({
 				var capLayers = capability.Layer;
 				var contactInfo = parsedRes.WMT_MS_Capabilities.Service.ContactInformation;
 				var crs = parseInt(capability.SRS.substring(5));
-				for (var j = 0; j < capLayers.length; j++) {
-					var layer = capLayers[j];
-					var layerObj = {
-						crs: crs,
-						maxZoom: 18,
-						name: layer.Title,
-						type: 'nrl',
-						zoomOffset: 2,
-						tms: false,
-						noWrap: false,
-						continuousWorld: true,
-						attribution: mapServerName + ': ' + contactInfo.ContactPersonPrimary
-							.ContactOrganization + ' - ' + layer.Title,
-						url: mapServer.url + '/openlayers/' + layer.Name +
-							mapServer.tileUrl
-					};
-					mapPass = -1;
-					if (mapServer.baseLayers) {
-						mapPass = mapServer.baseLayers.indexOf(layer.Name);
-					}
-					if ((whitelist && whitelist.indexOf(layer.Name) > -1) || (blacklist && blacklist.indexOf(
-							layer.Name) === -1) || (!blacklist && !whitelist)) {
-						if (!(mapServer.baseLayers) || mapPass > -1) {
-							layerObj.baseLayer = true;
-							layers.push(layerObj);
-						} else {
-							layerObj.baseLayer = false;
-							layers.push(layerObj);
-						}
-					}
+				this.layersToAdd = [];
+				layersToAdd = self._parseWMSLayers(mapServer, capLayers, contactInfo, crs);
+				if (layersToAdd && layersToAdd.length > 0) {
+					layers = layersToAdd;
 				}
+
 			} else if (mapServer.type === 'wms') {
 				var x2js = new X2JS();
 				var parser = new DOMParser();
@@ -547,78 +523,113 @@ L.Control.AutoLayers = L.Control.extend({
 				var capability = parsedRes.WMS_Capabilities.Capability.Layer;
 				var capLayers = capability.Layer;
 				var contactInfo = parsedRes.WMS_Capabilities.Service.ContactInformation;
-				var crs = parseInt(capability.CRS[0].substring(5));
-				for (var j = 0; j < capLayers.length; j++) {
-					var layer = capLayers[j];
-					if (layer.Layer && layer.Layer.length > 1) {
-						for (var l = 0; l < layer.Layer.length; l++) {
-							var lowerLayer = layer.Layer[l];
-							var layerObj = {
-								crs: crs,
-								maxZoom: 18,
-								name: lowerLayer.Name,
-								type: 'wms',
-								zoomOffset: 1,
-								tms: false,
-								noWrap: false,
-								continuousWorld: true,
-								title: lowerLayer.Title,
-								attribution: mapServerName + ': ' + contactInfo.ContactPersonPrimary
-									.ContactOrganization + ' - ' + lowerLayer.Title,
-								url: mapServer.url
-							};
-							mapPass = -1;
-							if (mapServer.baseLayers) {
-								mapPass = mapServer.baseLayers.indexOf(lowerLayer.Title);
-							}
-							if ((whitelist && whitelist.indexOf(lowerLayer.Title) > -1) || (blacklist && blacklist.indexOf(
-									lowerLayer.Title) === -1) || (!blacklist && !whitelist)) {
-								if (!(mapServer.baseLayers) || mapPass > -1) {
-									layerObj.baseLayer = true;
-									layers.push(layerObj);
-								} else {
-									layerObj.baseLayer = false;
-									layers.push(layerObj);
-								}
-							}
-
-						}
-					} else {
-						var layerObj = {
-							crs: crs,
-							maxZoom: 18,
-							name: layer.Name,
-							type: 'wms',
-							zoomOffset: 1,
-							tms: false,
-							noWrap: false,
-							continuousWorld: true,
-							title: lowerLayer.Title,
-							attribution: mapServerName + ': ' + contactInfo.ContactPersonPrimary
-								.ContactOrganization + ' - ' + layer.Title,
-							url: mapServer.url
-						};
-						mapPass = -1;
-						if (mapServer.baseLayers) {
-							mapPass = mapServer.baseLayers.indexOf(layer.Title);
-						}
-						if ((whitelist && whitelist.indexOf(layer.Title) > -1) || (blacklist && blacklist.indexOf(
-								layer.Title) === -1) || (!blacklist && !whitelist)) {
-							if (!(mapServer.baseLayers) || mapPass > -1) {
-								layerObj.baseLayer = true;
-								layers.push(layerObj);
-							} else {
-								layerObj.baseLayer = false;
-								layers.push(layerObj);
-							}
-						}
-					}
+				var crs = capability.CRS[0];
+				this.layersToAdd = [];
+				layersToAdd = self._parseWMSLayers(mapServer, capLayers, contactInfo, crs);
+				if (layersToAdd && layersToAdd.length > 0) {
+					layers = layersToAdd;
 				}
 			}
-
+			//let's filter this list of any nulls (blacklists)
+			layers = layers.filter(function(l){
+				return (l !== undefined && l !== null);
+			})
 			self.mapLayers.push(layers);
 			self._initMaps(layers);
 		});
+	},
+
+	_parseESRILayers: function(mapServer, layers, crs){
+
+	},
+	_parseESRILayer: function(mapServer, layer, crs){
+
+	},
+	_parseNRLLayers: function(mapServer, layers, contactInfo, crs) {
+		var self = this;
+		for (var j = 0; j < layers.length; j++) {
+			var layer = layers[j];
+			if (layer.Layer && layer.Layer.length > 1) {
+				self.layersToAdd.concat(self._parseNRLLayers(mapServer, layer.Layer, contactInfo, crs));
+			} else {
+				self.layersToAdd.push(self._parseNRLLayer(mapServer, layer, contactInfo, crs));
+			}
+		}
+		return this.layersToAdd;
+	},
+	_parseNRLLayer: function(mapServer, layer, contactInfo, crs) {
+		var layerToAdd = [];
+		var layerObj = {
+			crs: crs,
+			maxZoom: 18,
+			name: layer.Title,
+			type: 'nrl',
+			zoomOffset: 2,
+			tms: false,
+			noWrap: false,
+			continuousWorld: true,
+			attribution: mapServerName + ': ' + contactInfo.ContactPersonPrimary
+				.ContactOrganization + ' - ' + layer.Title,
+			url: mapServer.url + '/openlayers/' + layer.Name +
+				mapServer.tileUrl
+		};
+
+		layerToAdd = this._createLayer(mapServer, layerObj, layer.Name);
+		return layerToAdd;
+
+	},
+	_parseWMSLayers: function(mapServer, layers, contactInfo, crs) {
+		var self = this;
+		for (var j = 0; j < layers.length; j++) {
+			var layer = layers[j];
+			if (layer.Layer && layer.Layer.length > 1) {
+				self.layersToAdd.concat(self._parseWMSLayers(mapServer, layer.Layer, contactInfo, crs));
+			} else {
+				self.layersToAdd.push(self._parseWMSLayer(mapServer, layer, contactInfo, crs));
+			}
+		}
+		return this.layersToAdd;
+	},
+
+	_parseWMSLayer: function(mapServer, layer, contactInfo, crs) {
+		var layerToAdd = [];
+		var layerObj = {
+			crs: crs,
+			maxZoom: 18,
+			name: layer.Name,
+			type: 'wms',
+			zoomOffset: 1,
+			tms: false,
+			noWrap: false,
+			continuousWorld: true,
+			title: layer.Title,
+			attribution: mapServer.name + ': ' + contactInfo.ContactPersonPrimary
+				.ContactOrganization + ' - ' + layer.Title,
+			url: mapServer.url
+		};
+		layerToAdd = this._createLayer(mapServer, layerObj, layer.Title);
+		return layerToAdd;
+
+	},
+
+	_createLayer: function(mapServer, layer, name) {
+		var blacklist = mapServer.blacklist;
+		var whitelist = mapServer.whitelist;
+		var layerToAdd = null;
+		mapPass = -1;
+		if (mapServer.baseLayers) {
+			mapPass = mapServer.baseLayers.indexOf(name);
+		}
+		if ((whitelist && whitelist.indexOf(name) > -1) || (blacklist && blacklist.indexOf(
+				name) === -1) || (!blacklist && !whitelist)) {
+			if (!(mapServer.baseLayers) || mapPass > -1) {
+				layer.baseLayer = true;
+			} else {
+				layer.baseLayer = false;
+			}
+			layerToAdd = layer;
+		}
+		return layerToAdd;
 	},
 
 	_getLayerByName: function(name) {
