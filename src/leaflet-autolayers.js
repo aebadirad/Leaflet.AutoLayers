@@ -424,7 +424,7 @@ L.Control.AutoLayers = L.Control.extend({
 							mapPass = mapServer.baseLayers.indexOf(layerName);
 						}
 						if ((whitelist && whitelist.indexOf(layerName) > -1) || (blacklist && blacklist.indexOf(
-								layerName) === -1)) {
+								layerName) === -1) || (!blacklist && !whitelist)) {
 							if (!(mapServer.baseLayers) || mapPass > -1) {
 								layers.push({
 									detailsUrl: url,
@@ -470,7 +470,7 @@ L.Control.AutoLayers = L.Control.extend({
 										mapPass = mapServer.baseLayers.indexOf(layerName);
 									}
 									if ((whitelist && whitelist.indexOf(layerName) > -1) || (blacklist && blacklist.indexOf(
-											layerName) === -1)) {
+											layerName) === -1) || (!blacklist && !whitelist)) {
 										if (!(mapServer.baseLayers) || mapPass > -1) {
 											layers.push({
 												detailsUrl: url,
@@ -528,7 +528,7 @@ L.Control.AutoLayers = L.Control.extend({
 						mapPass = mapServer.baseLayers.indexOf(layer.Name);
 					}
 					if ((whitelist && whitelist.indexOf(layer.Name) > -1) || (blacklist && blacklist.indexOf(
-							layer.Name) === -1)) {
+							layer.Name) === -1) || (!blacklist && !whitelist)) {
 						if (!(mapServer.baseLayers) || mapPass > -1) {
 							layerObj.baseLayer = true;
 							layers.push(layerObj);
@@ -617,14 +617,6 @@ L.Control.AutoLayers = L.Control.extend({
 
 	_removeSelectedOverlay: function(name) {
 		if (this.selectedOverlays.indexOf(name) > -1) {
-			//var labels = this._selectedList.getElementsByTagName('label');
-			//for (var i = 0; i < labels.length; i++) {
-			//	var label = labels[i];
-			//	var nameSpan = label.getElementsByClassName("selected-name")[0];
-			//	if (nameSpan.innerHTML === name) {
-			//		label.parentNode.removeChild(label);
-			//	}
-			//}
 			this.selectedOverlays.splice(this.selectedOverlays.indexOf(name), 1);
 			this._buildSelectedOverlays();
 		}
@@ -661,7 +653,6 @@ L.Control.AutoLayers = L.Control.extend({
 		var self = this;
 		var zIndexBase = this.zIndexBase;
 		var overlays = this.selectedOverlays;
-		//overlays.reverse();
 		var totalSelected = overlays.length;
 		var maxBase = zIndexBase + totalSelected;
 		for (var i = 0; i < overlays.length; i++) {
@@ -671,17 +662,6 @@ L.Control.AutoLayers = L.Control.extend({
 			maxBase--;
 		};
 		return this._buildSelectedOverlays();
-	},
-
-	_setOrderOverlay: function() {
-		var zIndexBase = this.zIndexBase;
-		var overlays = this.selectedOverlays;
-		var maxBase = zIndexBase + overlays.length;
-		for (var i = 0; i < overlays.length; i++) {
-			layer.setZIndex(maxBase);
-			overlays[key] = layer;
-		}
-		this.selectedOverlays = overlays;
 	},
 
 	_selectOverlays: function() {
@@ -752,6 +732,7 @@ L.Control.AutoLayers = L.Control.extend({
 
 		if (type === 'overlayadd') {
 			this._addSelectedOverlay(obj.name);
+			e.layer.setZIndex(this.zIndexBase)
 		}
 
 		if (type === 'overlayremove') {
@@ -826,7 +807,7 @@ L.Control.AutoLayers = L.Control.extend({
 		}
 
 		this._handlingClick = false;
-
+		//keep this commented out so we don't lose focus
 		//this._refocusOnMap();
 	},
 	_expand: function() {

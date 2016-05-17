@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Leaflet AutoControl Example</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="leaflet.css" />
+    <link rel="stylesheet" href="css/leaflet.auto-layers.css" />
+</head>
+
+<body>
+    <div id="map" style="width: 600px; height: 400px"></div>
+    <script src="leaflet.js"></script>
+    <script src="../src/leaflet-autolayers.js"></script>
+    <script>
+    var cities = new L.LayerGroup();
+
+    L.marker([39.61, -105.02]).bindPopup('This is Littleton, CO.').addTo(cities),
+        L.marker([39.74, -104.99]).bindPopup('This is Denver, CO.').addTo(cities),
+        L.marker([39.73, -104.8]).bindPopup('This is Aurora, CO.').addTo(cities),
+        L.marker([39.77, -105.23]).bindPopup('This is Golden, CO.').addTo(cities);
+
+    var map = L.map('map', {
+        zoom: 1,
+        center: [0,0]
+    });
+
+    var overlays = {
+        "Cities": cities
+    };
+
+
+    var config = {
+        overlays: overlays,
+        selectedBasemap: 'World_Street_Map',
+        selectedOverlays: ["Cities"],
+        mapServers: [{
+            "url": "http://services.arcgisonline.com/arcgis/rest/services",
+            "dictionary": "http://services.arcgisonline.com/arcgis/rest/services?f=pjson",
+            "tileUrl": "/MapServer/tile/{z}/{y}/{x}",
+            "name": "ArcGIS Online",
+            "type": "esri",
+            "baseLayers": ["World_Street_Map"]
+        }]
+    };
+
+    var control = L.control.autolayers(config).addTo(map);
+    </script>
+</body>
+
+</html>
