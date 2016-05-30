@@ -394,8 +394,10 @@ L.Control.AutoLayers = L.Control.extend({
 		var mapServers = this.mapConfig.mapServers;
 		var self = this;
 		var mapLayers = [];
-		for (var i = 0; i < mapServers.length; i++) {
-			var layers = this.fetchMapDictionary(mapServers[i]);
+		if (mapServers) {
+			for (var i = 0; i < mapServers.length; i++) {
+				var layers = this.fetchMapDictionary(mapServers[i]);
+			}
 		}
 	},
 
