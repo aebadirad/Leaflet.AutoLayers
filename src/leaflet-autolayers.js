@@ -67,8 +67,12 @@ L.Control.AutoLayers = L.Control.extend({
 
 		for (var i in overlays) {
 			this._addLayer(overlays[i], i, true);
-			this.overLays[i] = overlays[i];
+			this.overLays[i] = overlays[i];	
 		}
+
+		//incase we have no mapservers but still wish to add custom overlays pre-selected
+		this._selectOverlays();
+		
 		this.fetchMapData();
 	},
 
