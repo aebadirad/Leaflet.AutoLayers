@@ -1,4 +1,4 @@
-.leaflet-control-layers-tab {
+.leaflet-control-autolayers-title {
     cursor: pointer;
 }
 
@@ -39,6 +39,11 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.leaflet-control-layers-base label:hover {
+    background-color: #CCC;
 }
 
 .leaflet-control-layers-overlays {
@@ -56,6 +61,11 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.leaflet-control-layers-overlays label:hover {
+    background-color: #CCC;
 }
 
 .leaflet-control-layers-selected {
