@@ -54,6 +54,7 @@ L.Control.AutoLayers = L.Control.extend({
 		this._layers = {};
 		this._lastZIndex = 0;
 		this._handlingClick = false;
+		this._initLayout();
 		var baseLayers = mapConfig.baseLayers;
 		var overlays = mapConfig.overlays;
 		var selectedBasemap = this.selectedBasemap = mapConfig.selectedBasemap;
@@ -67,22 +68,19 @@ L.Control.AutoLayers = L.Control.extend({
 
 		for (var i in overlays) {
 			this._addLayer(overlays[i], i, true);
-			this.overLays[i] = overlays[i];	
+			this.overLays[i] = overlays[i];
 		}
 
 		//incase we have no mapservers but still wish to add custom overlays pre-selected
 		this._selectOverlays();
-		
+
 		this.fetchMapData();
 	},
 
 	onAdd: function(map) {
-		this._initLayout();
+		this._initEvents();
 		this._update();
-
-		map
-			.on('layeradd', this._onLayerChange, this)
-			.on('layerremove', this._onLayerChange, this);
+		map.on('layeradd', this._onLayerChange, this).on('layerremove', this._onLayerChange, this);
 		return this._container;
 	},
 
@@ -146,7 +144,6 @@ L.Control.AutoLayers = L.Control.extend({
 				setTimeout(L.bind(this._onInputClick, this), 0);
 			}, this);
 
-			this._map.on('click', this._collapse, this);
 			// TODO keyboard accessibility
 		} else {
 			this._expand();
@@ -193,7 +190,9 @@ L.Control.AutoLayers = L.Control.extend({
 
 		container.appendChild(form);
 
-		return this._initEvents();
+		//check to see if we have any preadded 
+
+		return true;
 	},
 
 	_initEvents: function() {
@@ -339,6 +338,9 @@ L.Control.AutoLayers = L.Control.extend({
 			this.scrollTop += (delta < 0 ? 1 : -1) * 30;
 			e.preventDefault();
 		});
+
+		//make sure we collapse the control on mapclick
+		this._map.on('click', this._collapse, this);
 
 	},
 
@@ -741,6 +743,7 @@ L.Control.AutoLayers = L.Control.extend({
 			var overlay = selectedOverlays[i];
 			if (overLays[overlay]) {
 				overLays[overlay].addTo(map);
+				this._addSelectedOverlay(selectedOverlays[i]);
 			}
 		}
 	},
@@ -753,9 +756,11 @@ L.Control.AutoLayers = L.Control.extend({
 			overlay: overlay
 		};
 
-		if (this.options.autoZIndex && layer.setZIndex) {
+		if (this.options.autoZIndex && layer.setZIndex && overlay) {
 			this._lastZIndex++;
 			layer.setZIndex(this._lastZIndex);
+		} else {
+			layer.setZIndex(0);
 		}
 	},
 
