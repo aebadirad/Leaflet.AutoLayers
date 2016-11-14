@@ -52,8 +52,9 @@
 
     var map = L.map('map', {
         crs: wgs84,
-        zoom: 1,
-        center: [0,0]
+        zoom: 0,
+        center: [0,0],
+        maxBounds: L.latLngBounds([-180, -90], [180, 90])
     });
 
     var baseLayers = {
