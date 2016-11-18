@@ -1,0 +1,21 @@
+{
+    "name": "Leaflet.AutoLayers",
+    "version": "v0.2",
+    "description": "A dynamic leaflet layers control that pulls from multiple mapservers and manages basemaps and overlays plus order",
+    "main": [
+        "src/leaflet-autolayers.js",
+        "src/css/leaflet.auto-layers.css"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aebadirad/Leaflet.AutoLayers"
+    },
+    "keywords": [
+        "leaflet",
+		"autolayers",
+		"geospatial"
+    ],
+	"author": "Alex Ebadirad <https://github.com/aebadirad>",
+    "license": "MIT",
+    "demo": "http://aebadirad.github.io/Leaflet.AutoLayers/example/index.html"
+}
