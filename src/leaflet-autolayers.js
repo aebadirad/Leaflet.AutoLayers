@@ -416,7 +416,7 @@ L.Control.AutoLayers = L.Control.extend({
 
 			if (mapServer.type === 'esri') {
 				var response = JSON.parse(res);
-				var layersToAdd = self._parseESRILayers(mapServer, response);
+				var layersToAdd = self._parseESRILayers(mapServer, response, false);
 				if (layersToAdd && layersToAdd.length > 0) {
 					layers = layersToAdd;
 				}
@@ -469,7 +469,7 @@ L.Control.AutoLayers = L.Control.extend({
 		folders = response.folders;
 		for (var i = 0; i < services.length; i++) {
 			if (services[i].type === 'MapServer') {
-				layersToAdd.push(self._parseESRILayer(mapServer, services[i]));
+				layersToAdd.push(self._parseESRILayer(mapServer, services[i], false));
 			}
 		}
 		//now we check folders, why? we don't want calls within calls
@@ -499,7 +499,7 @@ L.Control.AutoLayers = L.Control.extend({
 		return layersToAdd;
 
 	},
-	_parseESRILayer: function(mapServer, layer, folder = false) {
+	_parseESRILayer: function(mapServer, layer, folder) {
 		var layerToAdd = [];
 		if (folder) {
 			var fullName = layer.name.split('/');
