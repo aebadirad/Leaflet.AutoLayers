@@ -37,10 +37,16 @@ L.Control.AutoLayers = L.Control.extend({
 			},
 			controlLayerList:{
 				baseMaps:{
-					title: "Base Maps"
+					title: "Base Maps",
+					filter:{
+						placeholder: "Filter Base Layer"
+					}
 				},
 				overlays:{
-					title: "OverLays"
+					title: "Overlays",
+					filter:{
+						placeholder: "Filter Overlay"
+					}
 				},
 				orderLayers:{
 					title: "Selected Overlays Order"
@@ -178,7 +184,7 @@ L.Control.AutoLayers = L.Control.extend({
 		var baseLayersBox = this._baseLayersBox = L.DomUtil.create('div', 'map-filter', baseLayersDiv);
 		var baseLayersFilter = this._baseLayersFilter = L.DomUtil.create('input',
 			'map-filter-box-base', baseLayersBox);
-		baseLayersFilter.setAttribute('placeholder', 'Filter Base Layer List');
+		baseLayersFilter.setAttribute('placeholder', this.options.i18n.controlLayerList.baseMaps.filter.placeholder);
 		baseLayersFilter.setAttribute('autocomplete', 'off');
 		this._baseLayersList = L.DomUtil.create('div', className + '-base', baseLayersDiv);
 		this._separator = L.DomUtil.create('div', className + '-separator', form);
@@ -193,7 +199,7 @@ L.Control.AutoLayers = L.Control.extend({
 			overlaysLayersDiv);
 		var overlaysLayersFilter = this._overlaysLayersFilter = L.DomUtil.create('input',
 			'map-filter-box-overlays', overlaysLayersBox);
-		overlaysLayersFilter.setAttribute('placeholder', 'Filter Overlays List');
+		overlaysLayersFilter.setAttribute('placeholder', this.options.i18n.controlLayerList.overlays.filter.placeholder);
 		overlaysLayersFilter.setAttribute('autocomplete', 'off');
 		this._overlaysList = L.DomUtil.create('div', className + '-overlays', overlaysLayersDiv);
 		this._separator = L.DomUtil.create('div', className + '-separator', form);
@@ -272,12 +278,17 @@ L.Control.AutoLayers = L.Control.extend({
 		//open and close setup
 		var titles = this._form.getElementsByClassName('leaflet-control-autolayers-title');
 		for (var t = 0; t < titles.length; t++) {
+
+			var baseMapsTitle = self.options.i18n.controlLayerList.baseMaps.title;
+			var overlaysTitle = self.options.i18n.controlLayerList.overlays.title;
+
 			L.DomEvent.addListener(titles[t], 'click', function(e) {
 				var overlayOrBase;
-				if (e.currentTarget.innerText === 'Overlays') {
+				
+				if (e.currentTarget.innerText === overlaysTitle) {
 					overlayOrBase = 'overlays';
 				}
-				if (e.currentTarget.innerText === 'Base Maps') {
+				if (e.currentTarget.innerText === baseMapsTitle) {
 					overlayOrBase = 'base';
 				}
 
@@ -305,8 +316,8 @@ L.Control.AutoLayers = L.Control.extend({
 					}
 				}
 
-				if (e.currentTarget.innerText === 'Overlays' || e.currentTarget
-					.innerText === 'Base Maps') {
+				if (e.currentTarget.innerText === overlaysTitle || e.currentTarget
+					.innerText === baseMapsTitle) {
 					var filterBoxValue = this.parentNode.getElementsByClassName('map-filter')[0].children[0].value
 						.toLowerCase();
 					var displayLayers = this.parentNode.getElementsByClassName('leaflet-control-layers-' +
@@ -366,6 +377,9 @@ L.Control.AutoLayers = L.Control.extend({
 		var mapConfig = this.mapConfig;
 		var self = this;
 		var selected;
+
+		console.log("Map Layers: ", mapLayers);
+
 		for (var i = 0; i < mapLayers.length; i++) {
 			var mapLayer = mapLayers[i];
 			if (!mapLayer.baseLayer) {
@@ -868,6 +882,7 @@ L.Control.AutoLayers = L.Control.extend({
 		L.DomEvent.on(input, 'click', this._onInputClick, this);
 
 		var name = document.createElement('span');
+		
 		name.innerHTML = ' ' + obj.name;
 
 		label.appendChild(input);
