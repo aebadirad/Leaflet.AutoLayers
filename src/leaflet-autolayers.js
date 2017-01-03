@@ -28,7 +28,25 @@ L.Control.AutoLayers = L.Control.extend({
 	options: {
 		collapsed: true,
 		position: 'topright',
-		autoZIndex: true
+		autoZIndex: true,
+
+		i18n: {
+			toggleButtonLayer:{
+				title: 'Button Tootle Layers',
+				href: '#'
+			},
+			controlLayerList:{
+				baseMaps:{
+					title: "Base Maps"
+				},
+				overlays:{
+					title: "OverLays"
+				},
+				orderLayers:{
+					title: "Selected Overlays Order"
+				}
+			}
+		}
 	},
 	mapConfig: {},
 	mapLayers: [],
@@ -129,8 +147,8 @@ L.Control.AutoLayers = L.Control.extend({
 		if (this.options.collapsed) {
 
 			var link = this._layersLink = L.DomUtil.create('a', className + '-toggle', container);
-			link.href = '#';
-			link.title = 'Layers';
+			link.href = this.options.i18n.toggleButtonLayer.href;
+			link.title = this.options.i18n.toggleButtonLayer.title;
 
 			if (L.Browser.touch) {
 				L.DomEvent
@@ -154,7 +172,7 @@ L.Control.AutoLayers = L.Control.extend({
 			form);
 		this._baseLayersTitle = L.DomUtil.create('div', 'leaflet-control-autolayers-title',
 			baseLayersDiv);
-		this._baseLayersTitle.innerHTML = 'Base Maps';
+		this._baseLayersTitle.innerHTML = this.options.i18n.controlLayerList.baseMaps.title;
 		this._baseLayersClose = L.DomUtil.create('span', 'leaflet-control-autolayers-close',
 			baseLayersDiv);
 		var baseLayersBox = this._baseLayersBox = L.DomUtil.create('div', 'map-filter', baseLayersDiv);
@@ -170,7 +188,7 @@ L.Control.AutoLayers = L.Control.extend({
 			'leaflet-control-layers-tab', form);
 		this._overlaysLayersTitle = L.DomUtil.create('div', 'leaflet-control-autolayers-title',
 			overlaysLayersDiv);
-		this._overlaysLayersTitle.innerHTML = 'Overlays';
+		this._overlaysLayersTitle.innerHTML = this.options.i18n.controlLayerList.overlays.title;
 		var overlaysLayersBox = this._overlaysLayersBox = L.DomUtil.create('div', 'map-filter',
 			overlaysLayersDiv);
 		var overlaysLayersFilter = this._overlaysLayersFilter = L.DomUtil.create('input',
@@ -185,7 +203,7 @@ L.Control.AutoLayers = L.Control.extend({
 			'leaflet-control-layers-tab', form);
 		this._selectedLayersTitle = L.DomUtil.create('div', 'leaflet-control-autolayers-title',
 			selectedLayersDiv);
-		this._selectedLayersTitle.innerHTML = 'Selected Overlay Order';
+		this._selectedLayersTitle.innerHTML = this.options.i18n.controlLayerList.orderLayers.title;
 		this._selectedList = L.DomUtil.create('div', className + '-selected', selectedLayersDiv);
 
 		container.appendChild(form);
