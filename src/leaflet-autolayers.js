@@ -32,7 +32,7 @@ L.Control.AutoLayers = L.Control.extend({
 
 		i18n: {
 			toggleButtonLayer:{
-				title: 'Button Tootle Layers',
+				title: 'Layers',
 				href: '#'
 			},
 			controlLayerList:{
@@ -377,8 +377,6 @@ L.Control.AutoLayers = L.Control.extend({
 		var mapConfig = this.mapConfig;
 		var self = this;
 		var selected;
-
-		console.log("Map Layers: ", mapLayers);
 
 		for (var i = 0; i < mapLayers.length; i++) {
 			var mapLayer = mapLayers[i];
@@ -882,7 +880,6 @@ L.Control.AutoLayers = L.Control.extend({
 		L.DomEvent.on(input, 'click', this._onInputClick, this);
 
 		var name = document.createElement('span');
-		
 		name.innerHTML = ' ' + obj.name;
 
 		label.appendChild(input);
