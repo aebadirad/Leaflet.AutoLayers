@@ -84,7 +84,9 @@ For now it's going to remain in beta until the Leaflet 1.0.0 release. After that
 
 ## Authors
 
-* **Alex Ebadirad** - *Initial work* - [aebadirad](https://github.com/aebadirad)
+* **Alex Ebadirad** - *Initial work, maintainer* - [aebadirad](https://github.com/aebadirad)
+* **Diego Monteiro** - *PRs: [#9](https://github.com/aebadirad/Leaflet.AutoLayers/pull/9),  [#8](https://github.com/aebadirad/Leaflet.AutoLayers/pull/8 * - [diegomonteiro](https://github.com/diegomonterio)
+* **Peter Smythe** - *PRs:  [#13](https://github.com/aebadirad/Leaflet.AutoLayers/pull/13* - [petersmythe](https://github.com/petersmythe)
 
 ## License
 
