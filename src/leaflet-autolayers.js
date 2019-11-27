@@ -483,7 +483,7 @@ L.Control.AutoLayers = L.Control.extend({
 			layers = layers.filter(function(l) {
 				return (l !== undefined && l !== null);
 			});
-			self.mapLayers.push(layers);
+			self.mapLayers = self.mapLayers.concat(layers);
 			self._initMaps(layers);
 		});
 	},
